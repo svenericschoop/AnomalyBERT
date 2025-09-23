@@ -6,7 +6,7 @@ LOG_DIR = 'logs/'
 DATA_PROPERTY_DIR = 'data/'
 
 
-DATASET_LIST = ['SMAP', 'MSL', 'SMD', 'SWaT', 'WADI']
+DATASET_LIST = ['SMAP', 'MSL', 'SMD', 'SWaT', 'WADI', 'CUSTOM']
 
 TRAIN_DATASET = {}
 TEST_DATASET = {}
@@ -16,6 +16,11 @@ for data_name in DATASET_LIST:
     TRAIN_DATASET[data_name] = os.path.join(DATASET_DIR, data_name + '_train.npy')
     TEST_DATASET[data_name] = os.path.join(DATASET_DIR, data_name + '_test.npy')
     TEST_LABEL[data_name] = os.path.join(DATASET_DIR, data_name + '_test_label.npy')
+
+# Custom dataset configuration
+NUMERICAL_COLUMNS['CUSTOM'] = tuple(range(10))  # Assuming 10 numerical columns
+CATEGORICAL_COLUMNS['CUSTOM'] = ()  # No categorical columns for custom data
+DEFAULT_DIVISION['CUSTOM'] = 'total'
 
 
 DATA_DIVISION = {'SMAP' : {'channel' : DATA_PROPERTY_DIR+'SMAP_test_channel.json',

@@ -1,0 +1,5 @@
+OmniAnomaly/
+.venv/
+.DS_Store
+processed/
+logs/
