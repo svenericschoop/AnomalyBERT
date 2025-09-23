@@ -1,7 +1,7 @@
 import os
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-DATASET_DIR = ''
+DATASET_DIR = 'processed/'
 LOG_DIR = 'logs/'
 DATA_PROPERTY_DIR = 'data/'
 
