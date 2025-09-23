@@ -17,10 +17,6 @@ for data_name in DATASET_LIST:
     TEST_DATASET[data_name] = os.path.join(DATASET_DIR, data_name + '_test.npy')
     TEST_LABEL[data_name] = os.path.join(DATASET_DIR, data_name + '_test_label.npy')
 
-# Custom dataset configuration
-NUMERICAL_COLUMNS['CUSTOM'] = tuple(range(10))  # Assuming 10 numerical columns
-CATEGORICAL_COLUMNS['CUSTOM'] = ()  # No categorical columns for custom data
-DEFAULT_DIVISION['CUSTOM'] = 'total'
 
 
 DATA_DIVISION = {'SMAP' : {'channel' : DATA_PROPERTY_DIR+'SMAP_test_channel.json',
@@ -78,3 +74,8 @@ NUMERICAL_COLUMNS['SWaT'] = tuple([i for i in range(0, 51) if (i not in CATEGORI
                                    and (i not in IGNORED_COLUMNS['SWaT'])])
 NUMERICAL_COLUMNS['WADI'] = tuple([i for i in range(0, 123) if (i not in CATEGORICAL_COLUMNS['WADI'])\
                                    and (i not in IGNORED_COLUMNS['WADI'])])
+
+# Custom dataset configuration
+NUMERICAL_COLUMNS['CUSTOM'] = tuple(range(10))  # Assuming 10 numerical columns
+CATEGORICAL_COLUMNS['CUSTOM'] = ()  # No categorical columns for custom data
+DEFAULT_DIVISION['CUSTOM'] = 'total'
