@@ -75,7 +75,7 @@ nohup python train_custom.py \
     --batch_size "$BATCH_SIZE" \
     --lr "$LEARNING_RATE" \
     --summary_steps "$SUMMARY_STEPS" \
-    --n_features 512 \
+    --n_features 10 \
     --patch_size 4 \
     --d_embed 512 \
     --n_layer 6 \
