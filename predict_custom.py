@@ -11,7 +11,6 @@ import torch
 import argparse
 import matplotlib.pyplot as plt
 from sklearn.metrics import precision_recall_curve, roc_curve, auc
-import pandas as pd
 
 import utils.config as config
 from models.anomaly_transformer import get_anomaly_transformer
@@ -60,7 +59,7 @@ def load_model(model_path, state_dict_path, device, hyperparams):
     return model
 
 
-def predict_anomalies(data, model, hyperparams, device, batch_size=16, window_sliding=16):
+def predict_anomalies(data, model, hyperparams, device, batch_size=16, window_sliding=None):
     """
     Predict anomaly scores for the given data.
     
@@ -70,12 +69,34 @@ def predict_anomalies(data, model, hyperparams, device, batch_size=16, window_sl
         hyperparams (dict): Model hyperparameters
         device: PyTorch device
         batch_size (int): Batch size for prediction
-        window_sliding (int): Window sliding step
+        window_sliding (int): Window sliding step (auto-calculated if None)
     
     Returns:
         Anomaly scores as numpy array
     """
     print("Computing anomaly scores...")
+    
+    # Calculate window size and ensure window_sliding is compatible
+    window_size = hyperparams['n_features'] * hyperparams['patch_size']
+    print(f"Window size: {window_size} (n_features={hyperparams['n_features']} * patch_size={hyperparams['patch_size']})")
+    
+    if window_sliding is None:
+        # Find the largest divisor of window_size that's <= 16
+        window_sliding = 1
+        for i in range(1, min(17, window_size + 1)):
+            if window_size % i == 0:
+                window_sliding = i
+        print(f"Auto-selected window_sliding: {window_sliding}")
+    else:
+        # Verify compatibility
+        if window_size % window_sliding != 0:
+            print(f"Warning: window_size ({window_size}) is not divisible by window_sliding ({window_sliding})")
+            # Find the largest compatible divisor
+            for i in range(window_sliding, 0, -1):
+                if window_size % i == 0:
+                    window_sliding = i
+                    break
+            print(f"Adjusted window_sliding to: {window_sliding}")
     
     # Set up data divisions (use total for custom data)
     divisions = [[0, len(data)]]
@@ -253,8 +274,8 @@ def main():
                        help="Custom threshold value (overrides other methods)")
     parser.add_argument("--batch_size", default=16, type=int,
                        help="Batch size for prediction")
-    parser.add_argument("--window_sliding", default=16, type=int,
-                       help="Window sliding step")
+    parser.add_argument("--window_sliding", default=None, type=int,
+                       help="Window sliding step (auto-calculated if not specified)")
     parser.add_argument("--gpu_id", default=0, type=int,
                        help="GPU ID to use")
     parser.add_argument("--visualize", action="store_true",
