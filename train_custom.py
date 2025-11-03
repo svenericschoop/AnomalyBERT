@@ -179,6 +179,14 @@ def main(options):
 
     
     # Start training.
+    def _format_duration(seconds):
+        seconds = int(seconds)
+        h, rem = divmod(seconds, 3600)
+        m, s = divmod(rem, 60)
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
+    train_start_time = time.time()
+    last_summary_time = train_start_time
     for i in range(options.initial_iter, max_iters):
         first_index = np.random.choice(valid_index_list, size=n_batch)
         x = []
@@ -336,6 +344,11 @@ def main(options):
 
         # Print training summary.
         if i % options.summary_steps == 0:
+            now = time.time()
+            elapsed_total = now - train_start_time
+            elapsed_interval = now - last_summary_time
+            avg_iter_time = elapsed_interval / max(1, options.summary_steps)
+            elapsed_str = _format_duration(elapsed_total)
             with torch.no_grad():
                 if options.loss == 'bce':
                     pred = (sigmoid(y) > 0.5).int()
@@ -348,7 +361,7 @@ def main(options):
                     
                     # For custom dataset, we skip validation with test labels since they're dummy
                     if options.dataset == 'CUSTOM':
-                        print(f'iteration: {i} | loss: {loss.item():.10f} | train accuracy: {acc:.10f}')
+                        print(f'iteration: {i} | loss: {loss.item():.10f} | train accuracy: {acc:.10f} | {avg_iter_time:.3f}s/iter | elapsed: {elapsed_str}')
                         print('Note: Using custom dataset - validation metrics not available\n')
                     else:
                         model.eval()
@@ -371,7 +384,7 @@ def main(options):
                         summary_writer.add_scalar('Valid/Recall', best_eval[1], i)
                         summary_writer.add_scalar('Valid/F1', best_eval[2], i)
                         
-                        print(f'iteration: {i} | loss: {loss.item():.10f} | train accuracy: {acc:.10f}')
+                        print(f'iteration: {i} | loss: {loss.item():.10f} | train accuracy: {acc:.10f} | {avg_iter_time:.3f}s/iter | elapsed: {elapsed_str}')
                         print(f'anomaly rate: {best_rate:.3f} | precision: {best_eval[0]:.5f} | recall: {best_eval[1]:.5f} | F1-score: {best_eval[2]:.5f}\n')
                     
                 else:
@@ -383,9 +396,10 @@ def main(options):
                     summary_writer.add_scalar('Reconstruction', rec, i)
                     summary_writer.add_scalar('Error rate', rec/origin, i)
 
-                    print('iter ', i, ',\tloss : {:.10f}'.format(loss.item()), ',\torigin err : {:.10f}'.format(origin), ',\trec : {:.10f}'.format(rec), sep='')
+                    print(f'iter {i},\tloss : {loss.item():.10f},\torigin err : {origin:.10f},\trec : {rec:.10f} | {avg_iter_time:.3f}s/iter | elapsed: {elapsed_str}')
                     print('\t\terr rate : {:.10f}'.format(rec/origin), sep='')
                     print()
+            last_summary_time = now
             torch.save(model.state_dict(), os.path.join(log_dir, 'state/state_dict_step_{}.pt'.format(i)))
 
         # Update gradients.
